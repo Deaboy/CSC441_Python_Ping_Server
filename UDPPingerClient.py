@@ -26,23 +26,25 @@ for sequenceNum in range(1,10):
     sentMessage = "Ping " + str(sequenceNum) + " " + sentTime.time().isoformat()
     
     # Send ping to server
-    print str(sequenceNum) + ": Sending " + str(sentMessage.__len__()) + " bytes of data"
     try:
         clientSock.sendto(sentMessage, (serverAddr, int(serverPort)))
     except:
         print "An error occured when transmitting packet"
+        continue
     
     # Attempt to receive response from server
     try:
         recvMessage, recvAddress = clientSock.recvfrom(1024)
-        
         recvTime = datetime.now()
-        if prevRTT == None:
-            prevRTT = recvTime - sentTime
         
+        # Calculate RTT and receive time
         sampleRTT = recvTime - sentTime
-        calcRTT = .875 * prevRTT.microseconds - .125 * sampleRTT.microseconds
-        print str(calcRTT / 10)
+        if prevRTT == None:
+            prevRTT = sampleRTT.microseconds
+        
+        calcRTT = .875 * prevRTT + .125 * sampleRTT.microseconds
+        prevRTT = calcRTT
+        print str(recvMessage.__len__()) + " bytes received from " + recvAddress[0] + ": time=" + str(sampleRTT.microseconds / 10) + "ms RTT=" + str(calcRTT / 10) + "ms"
         
     except timeout:
         print "Request timed out"
