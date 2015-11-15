@@ -61,6 +61,7 @@ for sequenceNum in range(1,11):
         sumRTT += sampleRTT.microseconds
         sumRecv = sumRecv + 1
         
+        # Print receipt message to console
         print str(recvMessage.__len__()) + " bytes received from " + recvAddress[0] + ": time=" + str(sampleRTT.microseconds / 10.0) + "ms RTT=" + str(calcRTT / 10.0) + "ms"
         print "    " + recvMessage
         
