@@ -5,6 +5,10 @@ from socket import *
 import random
 
 # Separate out the command line arguments
+if sys.argv.__len__() != 3:
+    print "Usage:"
+    print "  " + sys.argv[0] + " <host> <port>"
+    exit()
 serverAddr = sys.argv[1]
 serverPort = sys.argv[2]
 
@@ -67,9 +71,11 @@ for sequenceNum in range(1,11):
         
     except timeout:
         print "Request timed out"
-    
+
 # Print conclusion
 print ""
 print "--- " + serverAddr + " ping statistics ---"
 print str(sumSent) + " packets transmitted, " + str(sumRecv) + " packets received, " + str((1.0 - (sumRecv / (1 if sumSent == 0 else sumSent))) * 100) + "% packet loss"
-print "round-trip min/avg/max = " + str(minRTT / 10.0) + "/" + str(sumRTT / (1 if sumRecv == 0 else sumRecv) / 10.0) + "/" + str(maxRTT / 10) + " ms"
+if sumRecv != 0:
+    print "round-trip min/avg/max = " + str(minRTT / 10.0) + "/" + str(sumRTT / (1 if sumRecv == 0 else sumRecv) / 10.0) + "/" + str(maxRTT / 10) + " ms"
+
