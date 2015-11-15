@@ -1,3 +1,4 @@
+from __future__ import division
 import sys
 from datetime import *
 from socket import *
@@ -12,14 +13,20 @@ clientSock = socket(AF_INET, SOCK_DGRAM)
 clientSock.bind(('',0))
 clientSock.settimeout(1.0)
 
+# Initialize stat tracking variables
 prevRTT = None
+minRTT = None
+maxRTT = None
+sumRTT = 0
+sumSent = 0
+sumRecv = 0
 
 # Print confirmation message once we've finally bound to a port
 print 'Bound to port ' + str(clientSock.getsockname()[1])
 print 'Sending 10 messages to ' + serverAddr + ':' + serverPort
 
 # Send 10 sequential ping messages
-for sequenceNum in range(1,10):
+for sequenceNum in range(1,11):
     
     # Build ping message
     sentTime = datetime.now()
@@ -28,6 +35,7 @@ for sequenceNum in range(1,10):
     # Send ping to server
     try:
         clientSock.sendto(sentMessage, (serverAddr, int(serverPort)))
+        sumSent = sumSent + 1
     except:
         print "An error occured when transmitting packet"
         continue
@@ -44,11 +52,23 @@ for sequenceNum in range(1,10):
         
         calcRTT = .875 * prevRTT + .125 * sampleRTT.microseconds
         prevRTT = calcRTT
-        print str(recvMessage.__len__()) + " bytes received from " + recvAddress[0] + ": time=" + str(sampleRTT.microseconds / 10) + "ms RTT=" + str(calcRTT / 10) + "ms"
+        
+        # Stats tracking
+        if minRTT == None or sampleRTT.microseconds < minRTT:
+            minRTT = sampleRTT.microseconds
+        if maxRTT == None or sampleRTT.microseconds > maxRTT:
+            maxRTT = sampleRTT.microseconds
+        sumRTT += sampleRTT.microseconds
+        sumRecv = sumRecv + 1
+        
+        print str(recvMessage.__len__()) + " bytes received from " + recvAddress[0] + ": time=" + str(sampleRTT.microseconds / 10.0) + "ms RTT=" + str(calcRTT / 10.0) + "ms"
         print "    " + recvMessage
         
     except timeout:
         print "Request timed out"
     
 # Print conclusion
-print "Sent 10 messages"
+print ""
+print "--- " + serverAddr + " ping statistics ---"
+print str(sumSent) + " packets transmitted, " + str(sumRecv) + " packets received, " + str((1.0 - (sumRecv / (1 if sumSent == 0 else sumSent))) * 100) + "% packet loss"
+print "round-trip min/avg/max = " + str(minRTT / 10.0) + "/" + str(sumRTT / (1 if sumRecv == 0 else sumRecv) / 10.0) + "/" + str(maxRTT / 10) + " ms"
