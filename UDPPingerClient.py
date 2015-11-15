@@ -45,6 +45,7 @@ for sequenceNum in range(1,10):
         calcRTT = .875 * prevRTT + .125 * sampleRTT.microseconds
         prevRTT = calcRTT
         print str(recvMessage.__len__()) + " bytes received from " + recvAddress[0] + ": time=" + str(sampleRTT.microseconds / 10) + "ms RTT=" + str(calcRTT / 10) + "ms"
+        print "    " + recvMessage
         
     except timeout:
         print "Request timed out"
